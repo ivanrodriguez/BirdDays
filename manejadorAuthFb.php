@@ -10,13 +10,17 @@ if (isset($_SESSION['token_acceso_facebook'])) {
     }
     header('location: ' . URL_BASE . 'manejadorInfo.php');
 } elseif (isset($_GET['code'])) {
+    $cookieSesion = 'PHPSESSID=' . $_COOKIE['PHPSESSID'] . '; path=/';
+    session_write_close();
     $curl = curl_init();
     curl_setopt($curl, CURLOPT_URL, 'https://graph.facebook.com/oauth/access_token?client_id=' . FACEBOOK_CLIENT_ID . '&redirect_uri=' . URL_MANEJADOR_FB . '&client_secret=' . FACEBOOK_CLIENT_SECRET . '&code=' . $_GET['code']);
     curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
     curl_setopt($curl, CURLOPT_SSL_VERIFYPEER, false);
+    curl_setopt($curl, CURLOPT_COOKIE, $cookieSesion );
     $strRespuesta = curl_exec($curl);
     if ($strRespuesta == false)
         echo 'Tenemos problemas, por favor intenta de nuevo';
+    session_start();
     parse_str($strRespuesta, $arrRespuestas);
     $_SESSION['token_acceso_facebook'] = $arrRespuestas['access_token'];
     $_SESSION['expira_token_facebook'] = time() + $arrRespuestas['expires'];
